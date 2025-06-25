@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: laravel-mysql-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: laravel-app
+  template:
+    metadata:
+      labels:
+        app: laravel-app
+    spec:
+      containers:
+        - name: web
+          image: php:8.2-fpm
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              apt update && \
+              apt install -y git nginx php-mysql php-cli php-mbstring php-xml unzip openssh-server && \
+              mkdir -p /var/www/html && \
+              cd /var/www/html && \
+              git clone https://github.com/<your-laravel-repo>.git . && \
+              php artisan serve --host=0.0.0.0 --port=8080
+          ports:
+            - containerPort: 8080
+            - containerPort: 22
+        - name: mysql
+          image: mysql:8.0
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "Hello@123"
+            - name: MYSQL_DATABASE
+              value: "<yourname>-db"
+          ports:
+            - containerPort: 3306
